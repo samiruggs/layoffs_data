@@ -1,8 +1,8 @@
-# Exploratory Data Analysis (EDA) Using SQL 
+# Cleaning Data Using SQL 
 
 ## Project Overview
 
-This project focuses on performing **Exploratory Data Analysis (EDA)** using **SQL** to understand, clean, and extract insights from the dataset.
+This project focuses on performing cleaning processes on the dataset.
 
 **Dataset Name:** Layoffs Dataset
 
@@ -56,9 +56,7 @@ FROM dbo.layoffs;
 
 - Handle missing and inconsistent data
 
-- Analyze layoffs by country, industry, and year
-
-- Identify trends and outliers
+- Handling null values
 
 ## Data Cleaning Steps
 
@@ -224,6 +222,25 @@ WHERE company = 'Carvana'
 UPDATE layoff_staging
 SET industry = 'Cars'
 WHERE company = 'Carvana'
+```
+### Handling the NULL values of the numbers columns
+
+**Identify the NULL values**
+
+```sql
+SELECT total_laid_off, percentage_laid_off
+FROM layoff_staging
+WHERE total_laid_off IS NULL OR percentage_laid_off IS NULL
+```
+
+**Delete all rows containing the null values**
+
+```sql
+WITH cte AS (SELECT *
+    FROM layoff_staging
+    WHERE total_laid_off IS NULL OR percentage_laid_off IS NULL) 
+DELETE FROM cte
+WHERE percentage_laid_off IS NULL OR total_laid_off IS NULL; 
 ```
 
 
