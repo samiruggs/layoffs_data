@@ -153,3 +153,77 @@ ROW_NUMBER() OVER(PARTITION BY
   DELETE FROM cte
   WHERE rn > 1
 ```
+
+###  standardize elements across company, country, location, industry columns.
+
+```sql
+SELECT DISTINCT company
+FROM layoff_staging
+ORDER BY 1                 --- There were no errors found here
+```
+```sql
+SELECT DISTINCT location
+FROM layoff_staging
+ORDER BY 1                  --- Two errors were found Dusseldorf  & Malmo due to sign spellings         
+```
+```sql
+ --- Correction of the error
+UPDATE layoff_staging
+SET location = Dusseldorf
+WHERE location LIKE 'dorf%'
+
+UPDATE layoff_staging
+SET location = Malmo
+WHERE location LIKE 'Mal%'
+```
+```sql
+SELECT DISTINCT country
+FROM layoff_staging
+ORDER BY 1              --- An error was found
+```
+```sql
+ --- Correction of the error
+UPDATE layoff_staging
+SET country = TRIM(REPLACE(country,'.',''))
+WHERE country LIKE 'United States%'           
+```
+
+### Checked for null and empty values across columns and decided whether to keep, replace, or remove them.
+```sql
+
+SELECT *
+	FROM layoff_staging
+	WHERE country IS NULL OR country = ''      --- No error was found here
+```
+```sql
+
+SELECT *
+FROM layoff_staging
+WHERE company IS NULL OR company = ''    --- three errors were found
+
+SELECT *
+FROM layoff_staging
+WHERE company = 'Airbnb'                --- checked what the missing values were
+
+UPDATE layoff_staging
+SET industry = 'Travel'
+WHERE company = 'Airbnb'                 --- Replace the missing values
+
+SELECT *
+FROM layoff_staging
+WHERE company = 'Juul'
+
+UPDATE layoff_staging
+SET industry = 'Travel'
+WHERE company = 'Airbnb'
+
+SELECT *
+FROM layoff_staging
+WHERE company = 'Carvana'
+
+UPDATE layoff_staging
+SET industry = 'Cars'
+WHERE company = 'Carvana'
+```
+
+
