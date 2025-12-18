@@ -31,6 +31,7 @@ SELECT
 		FROM INFORMATION_SCHEMA.COLUMNS
 		WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'layoffs') AS column_count
 FROM dbo.layoffs;
+```
 
 **Time period covered:**
 
@@ -45,4 +46,110 @@ SELECT
     MIN([date]) AS minimum_date,
     MAX([date]) AS maximum_date
 FROM dbo.layoffs;
+```
 
+## Objectives of the Analysis
+
+- Understand the structure of the dataset
+
+- Identify and remove duplicates
+
+- Handle missing and inconsistent data
+
+- Analyze layoffs by country, industry, and year
+
+- Identify trends and outliers
+
+## Data Cleaning Steps
+
+### Understand the Data
+```sql
+SELECT *
+FROM INFORMATION_SCHEMA.COLUMNS
+```
+```sql
+SELECT 
+	COLUMN_NAME,
+	DATA_TYPE
+FROM INFORMATION_SCHEMA.COLUMNS 
+WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'layoffs'
+```
+
+### Change of data type consistent with the elements in each fields
+
+```sql
+UPDATE layoffs
+SET total_laid_off = NULL
+WHERE total_laid_off = 'NULL';
+
+UPDATE layoffs
+SET percentage_laid_off = NULL
+WHERE percentage_laid_off = 'NULL';
+
+UPDATE layoffs
+SET funds_raised_millions = NULL
+WHERE funds_raised_millions = 'NULL';
+
+
+ALTER TABLE layoffs
+ALTER COLUMN total_laid_off INT;
+
+ALTER TABLE layoffs
+ALTER COLUMN percentage_laid_off FLOAT;
+
+ALTER TABLE layoffs
+ALTER COLUMN funds_raised_millions FLOAT;
+```
+
+### Make a copy of my data incase of any mistakes
+```sql
+CREATE TABLE layoff_staging
+LIKE layoffs;
+```
+### Make a copy of Distinct Rows
+
+```sql
+SELECT DISTINCT *
+	INTO layoff_clean
+FROM layoff_staging;
+```
+Alternatively, Duplicates were identified and removed to ensure accurate analysis.
+
+### Identify Duplicate Rows
+
+```sql
+WITH cte AS(SELECT *,
+ROW_NUMBER() OVER(PARTITION BY 
+       company
+      ,[location]
+      ,industry
+      ,[total_laid_off]
+      ,[percentage_laid_off]
+      ,[date]
+      ,[stage]
+      ,[country]
+      ,[funds_raised_millions]
+      ORDER BY country) AS rn
+  FROM [Layoffs].[dbo].[layoff_staging])
+  SELECT * FROM cte
+  WHERE rn > 1
+```
+### Delete Duplicate Rows
+
+```sql
+WITH cte AS(SELECT *,
+ROW_NUMBER() OVER(PARTITION BY 
+       company
+      ,[location]
+      ,industry
+      ,[total_laid_off]
+      ,[percentage_laid_off]
+      ,[date]
+      ,[stage]
+      ,[country]
+      ,[funds_raised_millions]
+      ORDER BY country) AS rn
+  FROM [Layoffs].[dbo].[layoff_staging])
+  DELETE FROM cte
+  WHERE rn > 1
+```
