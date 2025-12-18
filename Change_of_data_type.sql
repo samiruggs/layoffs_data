@@ -1,3 +1,5 @@
+-- the datatype asssigned by ssms was not accurate hence the need to change it to their respective datatype.
+
 ALTER TABLE dbo.cleaned
 ALTER COLUMN Date_Reported DATE;
 
@@ -24,3 +26,4 @@ ALTER COLUMN Year INT;
 
 ALTER TABLE dbo.cleaned
 ALTER COLUMN Month VARCHAR(15);
+
