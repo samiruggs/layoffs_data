@@ -186,6 +186,17 @@ SET country = TRIM(REPLACE(country,'.',''))
 WHERE country LIKE 'United States%'           
 ```
 
+```sql
+SELECT DISTINCT industry
+FROM layoff_staging
+ORDER BY 1                  --- Two errors were found due to different representations of Crypto, Crypto Currency etc        
+```
+```sql
+ --- Correction of the error
+UPDATE layoff_staging
+SET location = Crypto
+WHERE location LIKE 'Crypto%'
+
 ### Checked for null and empty values across columns and decided whether to keep, replace, or remove them.
 ```sql
 
