@@ -1,3 +1,4 @@
+-- the ALTER COLUMN code could not convert "NULL' from string to int hence the need to manually convert them using the UPDATE function.
 UPDATE layoffs
 SET total_laid_off = NULL
 WHERE total_laid_off = 'NULL';
@@ -19,5 +20,6 @@ ALTER COLUMN percentage_laid_off FLOAT;
 
 ALTER TABLE layoffs
 ALTER COLUMN funds_raised_millions FLOAT;
+
 
 
