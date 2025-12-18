@@ -51,12 +51,16 @@ FROM dbo.layoffs;
 ## Objectives of the Analysis
 
 - Understand the structure of the dataset
-
+  
+- Convert columns to appropriate data types
+  
 - Identify and remove duplicates
 
 - Handle missing and inconsistent data
 
 - Handling null values
+
+- Validate data quality after cleaning
 
 ## Data Cleaning Steps
 
