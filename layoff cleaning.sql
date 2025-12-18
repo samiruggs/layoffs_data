@@ -51,6 +51,7 @@ FROM (
     FROM dbo.layoff_staging
 ) t;                            -- An alternative way to acsertain the distinct row count.
 
+
 WITH cte AS(SELECT *,
 ROW_NUMBER() OVER(PARTITION BY 
 company,
@@ -65,57 +66,53 @@ industry
       ORDER BY country) AS rn
   FROM [Layoffs].[dbo].[layoff_staging])
   SELECT * FROM cte
-  WHERE rn > 1
+  WHERE rn > 1                            -- this creates a new column rn to determine duplicated rows/ an alternative way to find duplicates
+                                          -- the duplicates are deleted by chaning (SELECT * FROM cte) to DELETE FROM cte
+
 
 SELECT DISTINCT country
 FROM layoff_staging
-ORDER BY 1
+ORDER BY 1                     -- select distinct country in alphavetical order for standardization
 
 UPDATE layoff_staging
 SET country = TRIM(REPLACE(country,'.',''))
-WHERE country LIKE 'United States%'
+WHERE country LIKE 'United States%'         -- Standardized United States. This and above was donefor text rows like industry, location etc
 
 SELECT *
 FROM layoff_staging
-WHERE country IS NULL OR country = ''
+WHERE country IS NULL OR country = ''       -- Identify null values in the country colunn, same is done with other text columns.
 
 SELECT *
 FROM layoff_staging
-WHERE company = 'Airbnb'
+WHERE company = 'Airbnb'            -- Airbnb row has an empty value so is seperated out for better understanding.
 
 UPDATE layoff_staging
 SET industry = 'Travel'
-WHERE company = 'Airbnb'
+WHERE company = 'Airbnb'           --the empty cell is replaced eith Travel as is obtainable with the others.
 
 SELECT *
 FROM layoff_staging
-WHERE company = 'Juul'
+WHERE company = 'Juul'             -- same is done here
 
 UPDATE layoff_staging
 SET industry = 'Travel'
-WHERE company = 'Airbnb'
+WHERE company = 'Airbnb'          -- same is done here
 
 SELECT *
 FROM layoff_staging
-WHERE company = 'Carvana'
+WHERE company = 'Carvana'            --  here too
 
 UPDATE layoff_staging
 SET industry = 'Travel'
-WHERE company = 'Airbnb'
-
+WHERE company = 'Airbnb'             -- here too
+           
 SELECT total_laid_off, percentage_laid_off
 FROM layoff_staging
-WHERE total_laid_off IS NULL OR percentage_laid_off IS NULL
+WHERE total_laid_off IS NULL OR percentage_laid_off IS NULL   --identifying null value in the number fields
 
 SELECT *
 FROM layoff_staging
-WHERE industry IS NULL OR industry = ''
-
-
-UPDATE layoff_staging
-SET industry = 'Cars'
-WHERE company = 'Carvana'
-
+WHERE industry IS NULL OR industry = ''    -- same
 
 SELECT total_laid_off, percentage_laid_off
 FROM layoff_staging
@@ -126,13 +123,11 @@ WITH cte AS (SELECT *
     FROM layoff_staging
     WHERE total_laid_off IS NULL OR percentage_laid_off IS NULL) 
 DELETE FROM cte
-WHERE percentage_laid_off IS NULL OR total_laid_off IS NULL; 
+WHERE percentage_laid_off IS NULL OR total_laid_off IS NULL;   ]-- delete or null value as information is incomplete
 
 SELECT *
 FROM layoff_staging
 
 
-SELECT *
-FROM layoff_staging
-WHERE company = 'Carvana'
+
 
