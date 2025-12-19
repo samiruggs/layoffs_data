@@ -321,11 +321,15 @@ SELECT *
 	FROM layoff_staging
 	WHERE country IS NULL OR country = ''      --- No error was found here
 ```
+
 ```sql
 
 SELECT *
 FROM layoff_staging
 WHERE company IS NULL OR company = ''    --- three errors were found
+```
+
+```sql
 
 SELECT *
 FROM layoff_staging
@@ -351,7 +355,8 @@ UPDATE layoff_staging
 SET industry = 'Cars'
 WHERE company = 'Carvana'
 ```
-### Handling the NULL values of the numbers columns
+
+### Handling the NULL values of the number columns
 
 **Identify the NULL values**
 
