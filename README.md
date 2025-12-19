@@ -1,4 +1,4 @@
-# Cleaning Data Using SQL 
+# Data Cleaning Using SQL 
 
 ## Project Overview
 
