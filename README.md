@@ -69,6 +69,7 @@ FROM dbo.layoffs;
 SELECT *
 FROM INFORMATION_SCHEMA.COLUMNS
 ```
+
 ```sql
 SELECT 
 	COLUMN_NAME,
@@ -76,6 +77,19 @@ SELECT
 FROM INFORMATION_SCHEMA.COLUMNS 
 WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'layoffs'
 ```
+**Output:**
+
+|COLUMN_NAME|	DATA_TYPE|
+|-----------|------------|
+|company    |	nvarchar |
+|location	|nvarchar    |
+|industry	|nvarchar    |
+|total_laid_off	| nvarchar     |
+|percentage_laid_off|nvarchar |
+|date	    |date        |
+|stage	    |nvarchar    |
+|country	|nvarchar    |
+|funds_raised_millions|nvarchar |
 
 ### Change of data type consistent with the elements in each fields
 
@@ -101,13 +115,35 @@ ALTER COLUMN percentage_laid_off FLOAT;
 
 ALTER TABLE layoffs
 ALTER COLUMN funds_raised_millions FLOAT;
+
+SELECT 
+	COLUMN_NAME,
+	DATA_TYPE
+FROM INFORMATION_SCHEMA.COLUMNS 
+WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'layoffs'
 ```
+
+**Output:**
+
+|COLUMN_NAME|	DATA_TYPE|
+|-----------|------------|
+|company    |	nvarchar |
+|location	|nvarchar    |
+|industry	|nvarchar    |
+|total_laid_off	| int    |
+|percentage_laid_off|float|
+|date	    |date        |
+|stage	    |nvarchar    |
+|country	|nvarchar    |
+|funds_raised_millions|float|
+
 
 ### Make a copy of my data incase of any mistakes
 ```sql
 CREATE TABLE layoff_staging
 LIKE layoffs;
 ```
+
 ### Make a copy of Distinct Rows
 
 ```sql
@@ -136,6 +172,18 @@ ROW_NUMBER() OVER(PARTITION BY
   SELECT * FROM cte
   WHERE rn > 1
 ```
+
+**Output:**
+
+| Company           | Location        | Industry        | Total_Laid_Off | Percentage_Laid_Off | Date       | Stage     | Country          | Funds_Raised | Duplicate_Count |
+|-------------------|-----------------|-----------------|----------------|---------------------|------------|-----------|------------------|--------------|-----------------|
+| Casper            | New York City   | Retail          | NULL           | NULL                | 2021-09-14 | Post-IPO  | United States    | 339          | 2               |
+| Cazoo             | London          | Transportation  | 750            | 0.15                | 2022-06-07 | Post-IPO  | United Kingdom   | 2000         | 2               |
+| Hibob             | Tel Aviv        | HR              | 70             | 0.30                | 2020-03-30 | Series A  | Israel           | 45           | 2               |
+| Wildlife Studios  | Sao Paulo       | Consumer        | 300            | 0.20                | 2022-11-28 | Unknown   | Brazil           | 260          | 2               |
+| Yahoo             | SF Bay Area     | Consumer        | 1600           | 0.20                | 2023-02-09 | Acquired  | United States    | 6            | 2               |
+
+
 ### Delete Duplicate Rows
 
 ```sql
@@ -155,6 +203,31 @@ ROW_NUMBER() OVER(PARTITION BY
   DELETE FROM cte
   WHERE rn > 1
 ```
+**Check:**
+
+```sql
+WITH cte AS(SELECT *,
+ROW_NUMBER() OVER(PARTITION BY 
+       company
+      ,[location]
+      ,industry
+      ,[total_laid_off]
+      ,[percentage_laid_off]
+      ,[date]
+      ,[stage]
+      ,[country]
+      ,[funds_raised_millions]
+      ORDER BY country) AS rn
+  FROM [Layoffs].[dbo].[layoff_staging])
+  SELECT * FROM cte
+  WHERE rn > 1
+```
+
+**Output:**
+
+| company | location | industry | total_laid_off | percentage_laid_off | date | stage | country | funds_raised_millions |
+|--------|----------|----------|----------------|---------------------|------|-------|---------|-----------------------|
+
 
 ###  standardize elements across company, country, location, industry columns.
 
@@ -166,42 +239,82 @@ ORDER BY 1                 --- There were no errors found here
 ```sql
 SELECT DISTINCT location
 FROM layoff_staging
-ORDER BY 1                  --- Two errors were found Dusseldorf  & Malmo due to sign spellings         
+ORDER BY 1                  --- Two errors were found Dusseldorf  & Malmo due to sign spellings
 ```
+
+--- Output
+
+| location    |
+|-------------|
+| Dusseldorf  |
+| Düsseldorf  |
+
+| location |
+|----------|
+| Malmo    |
+| Malmö    |
+
+
+
 ```sql
  --- Correction of the error
 UPDATE layoff_staging
 SET location = Dusseldorf
-WHERE location LIKE 'dorf%'
+WHERE location LIKE '%dorf'
 
 UPDATE layoff_staging
 SET location = Malmo
 WHERE location LIKE 'Mal%'
 ```
+
+
 ```sql
+--- Do same for country
+
 SELECT DISTINCT country
 FROM layoff_staging
 ORDER BY 1              --- An error was found
 ```
+**Output:**
+
+| country         |
+|-----------------|
+| United States   |
+| United States.  |
+
+
 ```sql
  --- Correction of the error
 UPDATE layoff_staging
 SET country = TRIM(REPLACE(country,'.',''))
 WHERE country LIKE 'United States%'           
 ```
+**check Industry**
 
 ```sql
 SELECT DISTINCT industry
 FROM layoff_staging
 ORDER BY 1                  --- Two errors were found due to different representations of Crypto, Crypto Currency etc        
 ```
+**Output:**
+
+| industry        |
+|-----------------|
+| Crypto          |
+| Crypto Currency |
+| CryptoCurrency  |
+
+
 ```sql
  --- Correction of the error
 UPDATE layoff_staging
 SET location = Crypto
 WHERE location LIKE 'Crypto%'
+```
+
 
 ### Checked for null and empty values across columns and decided whether to keep, replace, or remove them.
+
 ```sql
 
 SELECT *
