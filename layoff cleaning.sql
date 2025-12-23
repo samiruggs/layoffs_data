@@ -1,10 +1,4 @@
---- 1. Before this the UI interface was used to duplicate the layoff data and saving it as layoff_staging
-USE layoffs
-GO
-
-SELECT *
-FROM
-dbo.layoff_staging;    
+--- 1. Tried to find out the number of NULLS in each column  
 
 SELECT 
 SUM(CASE WHEN company IS NULL THEN 1 ELSE 0 END) AS company_nulls,
@@ -16,7 +10,7 @@ SUM(CASE WHEN [date] IS NULL THEN 1 ELSE 0 END) AS date_nulls,
 SUM(CASE WHEN stage IS NULL THEN 1 ELSE 0 END) AS stage_nulls,
 SUM(CASE WHEN country IS NULL THEN 1 ELSE 0 END) AS country_nulls,
 SUM(CASE WHEN funds_raised_millions IS NULL THEN 1 ELSE 0 END) AS fund_raised_millions_nulls
-FROM dbo.layoff_staging;                                                                             -- Tried to find out the number of NULLS in each columns
+FROM dbo.layoff_staging;                                                                             
 
  --- 2. copied layoff_staging into another back up data layoff_clean but for only distinct values.
 SELECT DISTINCT *
@@ -150,6 +144,7 @@ WHERE percentage_laid_off IS NULL OR total_laid_off IS NULL;
 --- 19. load the final and cleaned outcome
 SELECT *
 FROM layoff_staging
+
 
 
 
